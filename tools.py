@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+import socket
 import sqlite3
 import subprocess
 from os import name
@@ -121,7 +122,7 @@ async def bd_upload(file):
         command2.append(file)
         subprocess.run(command)
         s2 = subprocess.run(command2, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                              encoding='utf-8')
+                            encoding='utf-8')
         # while True:
         #     s2_code = s2.poll()
         #     if s2_code:
@@ -180,6 +181,7 @@ async def process_video(is_live, model):
     # await bot(f"[下载提示] {is_live['Title']} 已上传" + share)
     await bot(f"[下载提示] {is_live['Title']} 已上传, 请查看页面")
 
+
 class Database:
     def __init__(self):
         self.conn = sqlite3.connect('ref.db')
@@ -201,3 +203,11 @@ class Database:
             f"INSERT INTO StreamLink (ID, Title, Link, Date) VALUES (NULL, '{_title}', '{_link}', '{_date}');")
         self.conn.commit()
         self.logger.info(f"Link: {_link} has been inserted")
+
+
+def remote_call(msg):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.sendto(msg.encode('utf-8'), ('127.0.0.1', 7220))
+    returndata, addr = s.recvfrom(2048)
+    if returndata:
+        return True

@@ -2,7 +2,7 @@ import json
 import re
 
 from config import sec
-from tools import Aio, get_logger, process_video, Database
+from tools import Aio, get_logger, process_video, Database, remote_call
 
 
 class Youtube:
@@ -75,7 +75,9 @@ class Youtube:
             # vid = self.get_videoid_by_channel_id()
             # is_live = self.getlive_vid(vid)
             is_live = await self.get_videoid_by_channel_id(channel_id)
-            await process_video(is_live, 'Youtube')
+            result = remote_call('Youtube:' + is_live['Ref'])
+            if result:
+                await process_video(is_live, 'Youtube')
         elif 'Upcoming live streams' in html:
             self.logger.info(f'Found A Live Upcoming, after {sec}s checking')
         else:
